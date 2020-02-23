@@ -3,6 +3,8 @@ package com.example.demo;
 import okhttp3.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ResourceUtils;
 
 import java.io.*;
 import java.util.UUID;
@@ -15,8 +17,13 @@ class DemoApplicationTests {
 		try {
 			String fileName = "11111.pdf";
 			String url = "http://127.0.0.1:30006/icr/recognize_document?pdf=1";
-			File targetFile = new File("C:\\Users\\Administrator\\Desktop\\11111.pdf");
-			File newFile = new File("C:\\Users\\Administrator\\Desktop\\22222.pdf");
+//			File targetFile = new File("C:\\Users\\Administrator\\Desktop\\11111.pdf");
+//			File newFile = new File("C:\\Users\\Administrator\\Desktop\\22222.pdf");
+			String path= ResourceUtils.getURL("classpath:static").getPath();
+			String path2= ClassUtils.getDefaultClassLoader().getResource("").getPath();
+//			.replace("%20"," ").replace('/', '\\');//从路径字符串中取出工程路径
+			File targetFile = new File(path+"/11111.pdf");
+			File newFile = new File(path+"/22222.pdf");
 			System.out.println(upload(url, targetFile, fileName,newFile).string());
 		} catch (Exception e) {
 			e.printStackTrace();
