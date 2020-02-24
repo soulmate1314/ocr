@@ -20,7 +20,7 @@ class DemoApplicationTests {
 	public void upload() throws Exception {
 		try {
 			String fileName = "11111.pdf";
-			String url = "http://127.0.0.1:30006/icr/recognize_document?pdf=1";
+			String url = "http://127.0.0.1:30006/ocr/recognize_document?pdf=1";
 			String path= ResourceUtils.getURL("classpath:static").getPath();
 			File targetFile = new File(path+"/11111.pdf");
 			File newFile = new File(path+"/22222.pdf");
