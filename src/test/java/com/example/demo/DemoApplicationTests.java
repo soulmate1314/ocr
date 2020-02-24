@@ -44,16 +44,43 @@ class DemoApplicationTests {
 				.build();
 		Response response = client.newCall(request).execute();
 		int code = response.code();
-		InputStream inputStream = response.body().byteStream();
 		if (code == 200) {
-			OutputStream outStream = new FileOutputStream(newFile);
-			byte[]buffer=new byte[1024];
-			int readLength;
-			while((readLength=inputStream.read(buffer))>0){
-				System.out.println(new String(buffer,0,readLength));
-				outStream.write(buffer);
+			byte[] bytes = response.body().bytes();
+			BufferedInputStream bin = null;
+			FileOutputStream fout = null;
+			BufferedOutputStream bout = null;
+			try {
+				//创建一个将bytes作为其缓冲区的ByteArrayInputStream对象
+				ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+				//创建从底层输入流中读取数据的缓冲输入流对象
+				bin = new BufferedInputStream(bais);
+				//指定输出的文件
+				if (!newFile.exists()){
+					newFile.createNewFile();
+				}
+				//创建到指定文件的输出流
+				fout= new FileOutputStream(newFile);
+				//为文件输出流对接缓冲输出流对象
+				bout = new BufferedOutputStream(fout);
+				byte [] buffers = new byte[1024];
+				int len = bin.read(buffers);
+				while(len != -1){
+					bout.write(buffers, 0, len);
+					len = bin.read(buffers);
+				}
+				//刷新此输出流并强制写出所有缓冲的输出字节，必须这行代码，否则有可能有问题
+				bout.flush();
+			}catch(IOException e) {
+				e.printStackTrace();
+			}finally{
+				try {
+					bin.close();
+					fout.close();
+					bout.close();
+				}catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			outStream.close();
 		}
 		if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 		return response.body();
