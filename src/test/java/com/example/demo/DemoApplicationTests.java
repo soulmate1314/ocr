@@ -38,7 +38,7 @@ class DemoApplicationTests {
 						RequestBody.create(MediaType.parse("application/pdf"), targetFile))
 				.build();
 		Request request = new Request.Builder()
-				.header("Authorization", "Client-ID " + UUID.randomUUID())
+				.addHeader("Content-Type", "application/pdf")
 				.url(url)
 				.post(requestBody)
 				.build();
