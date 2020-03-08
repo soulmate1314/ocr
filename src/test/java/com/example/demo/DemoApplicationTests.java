@@ -19,17 +19,16 @@ class DemoApplicationTests {
 	@Test
 	public void upload() throws Exception {
 		try {
-			String fileName = "11111.pdf";
+			String fileName = "100.pdf";
 			String url = "http://127.0.0.1:30006/ocr/recognize_document?pdf=1";
 			String path= ResourceUtils.getURL("classpath:static").getPath();
-			File targetFile = new File(path+"/11111.pdf");
-			File newFile = new File(path+"/22222.pdf");
+			File targetFile = new File(path+"/100.pdf");
+			File newFile = new File(path+"/200.pdf");
 			System.out.println(upload(url, targetFile, fileName,newFile));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-//	multipart/form-data
 	static ResponseBody upload(String url, File targetFile, String fileName,File newFile) throws Exception {
 		OkHttpClient client = new OkHttpClient();
 		RequestBody requestBody = new MultipartBody.Builder()
@@ -42,7 +41,10 @@ class DemoApplicationTests {
 				.url(url)
 				.post(requestBody)
 				.build();
+		long start = System.currentTimeMillis();
 		Response response = client.newCall(request).execute();
+		long end = System.currentTimeMillis();
+		System.out.println("消耗时间---------"+(end-start));
 		int code = response.code();
 		if (code == 200) {
 			byte[] bytes = response.body().bytes();
