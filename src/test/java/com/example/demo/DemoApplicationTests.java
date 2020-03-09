@@ -12,6 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 class DemoApplicationTests {
@@ -20,7 +21,7 @@ class DemoApplicationTests {
 	public void upload() throws Exception {
 		try {
 			String fileName = "100.pdf";
-			String url = "http://127.0.0.1:30006/ocr/recognize_document?pdf=1";
+			String url = "http://111.47.10.117:30010/ocr/recognize_document?pdf=1";
 			String path= ResourceUtils.getURL("classpath:static").getPath();
 			File targetFile = new File(path+"/100.pdf");
 			File newFile = new File(path+"/200.pdf");
@@ -30,8 +31,12 @@ class DemoApplicationTests {
 		}
 	}
 	static ResponseBody upload(String url, File targetFile, String fileName,File newFile) throws Exception {
-		OkHttpClient client = new OkHttpClient();
-		RequestBody requestBody = new MultipartBody.Builder()
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.MINUTES)
+                .readTimeout(10, TimeUnit.MINUTES)
+                .build();
+        RequestBody requestBody = new MultipartBody.Builder()
 				.setType(MultipartBody.FORM)
 				.addFormDataPart("file", fileName,
 						RequestBody.create(MediaType.parse("application/pdf"), targetFile))
