@@ -1,20 +1,26 @@
 package com.example.demo;
 
+import com.alibaba.fastjson.JSONArray;
+import com.spire.pdf.PdfDocument;
+import com.spire.pdf.general.find.PdfTextFind;
+import com.spire.pdf.general.find.PdfTextFindCollection;
+import com.spire.pdf.security.GraphicMode;
+import com.spire.pdf.security.PdfCertificate;
+import com.spire.pdf.security.PdfCertificationFlags;
+import com.spire.pdf.security.PdfSignature;
 import okhttp3.*;
 import org.apache.poi.util.Units;
 import org.apache.poi.xwpf.usermodel.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ResourceUtils;
 
+import java.awt.*;
+import java.awt.geom.Dimension2D;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
@@ -189,6 +195,98 @@ class DemoApplicationTests {
 		}catch (Exception e){
 			e.printStackTrace();
 		}
+	}
+
+
+	@Test
+	public  void testpdf(){
+		try {
+			String path= ResourceUtils.getURL("classpath:static").getPath();
+			System.out.println("path----------------------"+path+"/11111.pdf");
+			File targetFile = new File(path+"/222.pdf");
+			//加载PDF文档
+//			D:/workspace/idea/myworld/ocr/target/classes/static/11111.pdf
+			PdfDocument doc = new PdfDocument();
+//			doc.loadFromFile("11111.pdf");
+			byte[] bytesByFile = getBytesByFile(targetFile);
+			doc.loadFromBytes(bytesByFile);
+			//加载pfx证书，及证书秘钥
+			PdfCertificate cert = new PdfCertificate(path+"/yansir.pfx","yansir");
+
+			//查找第一页中所有的“Germany”
+			PdfTextFindCollection text1 = doc.getPages().get(0).findText("日 期：");
+			PdfTextFind[] finds = text1.getFinds();
+
+//获取第一个“Germany”出现的位置
+			Point2D point2D = finds[0].getPosition();
+			Dimension2D size = finds[0].getSize();
+			System.out.println(point2D+"-----------"+ JSONArray.toJSONString(point2D));
+			System.out.println(size+"-----------"+ JSONArray.toJSONString(size));
+
+			//添加数字签名到指定页面，并设置其位置和大小
+			PdfSignature signature = new PdfSignature(doc, doc.getPages().get(0), cert, "MySignature");
+			Rectangle2D rect = new Rectangle2D.Float();
+			double x = doc.getPages().get(0).getActualSize().getWidth() - 340;
+			double y = doc.getPages().get(0).getActualSize().getHeight() - 150;
+			System.out.println(x+"---------------"+y);
+//			rect.setFrame(point2D, size);
+            rect.setFrame(new Point2D.Float((float)353,(float)712), new Dimension(36, 9));
+			signature.setBounds(rect);
+
+			//设置签名为图片加文本模式
+			signature.setGraphicMode(GraphicMode.Sign_Image_And_Sign_Detail);
+
+			//设置签名的内容
+			signature.setNameLabel("签字者：");
+			signature.setName("Mia");
+			signature.setContactInfoLabel("联系电话：");
+			signature.setContactInfo("02881705109");
+			signature.setDateLabel("日期：");
+			signature.setDate(new java.util.Date());
+			signature.setLocationInfoLabel("地点：");
+			signature.setLocationInfo("成都");
+			signature.setReasonLabel("原因：");
+			signature.setReason("文档所有者");
+			signature.setDistinguishedNameLabel("DN: ");
+			signature.setDistinguishedName(signature.getCertificate().get_IssuerName().getName());
+//			signature.setSignImageSource(PdfImage.fromFile(path+"/5.jpg"));
+
+			//设置签名的字体
+			//设置文档权限为禁止更改
+			signature.setDocumentPermissions(PdfCertificationFlags.Forbid_Changes);
+			signature.setCertificated(true);
+
+			//保存文档
+			doc.saveToFile("4.pdf");
+			doc.close();
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public static byte[] getBytesByFile(File file) {
+		try {
+			//获取输入流
+			FileInputStream fis = new FileInputStream(file);
+
+			//新的 byte 数组输出流，缓冲区容量1024byte
+			ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
+			//缓存
+			byte[] b = new byte[1024];
+			int n;
+			while ((n = fis.read(b)) != -1) {
+				bos.write(b, 0, n);
+			}
+			fis.close();
+			//改变为byte[]
+			byte[] data = bos.toByteArray();
+			//
+			bos.close();
+			return data;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 
